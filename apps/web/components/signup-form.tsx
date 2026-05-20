@@ -12,7 +12,7 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { useSignUpForm } from "~/hooks/api/auth"
-
+import { useRouter } from "next/navigation"
 
 type SignupFormValues = {
   name: string
@@ -31,6 +31,7 @@ export function SignupForm({
     error,
     status,
   } = useSignUpForm()
+    const router=useRouter()
 
   const {
     register,
@@ -47,7 +48,7 @@ export function SignupForm({
       fullName: data.name,
       password: data.password,
     })
-    console.log(`user is created ${id}`)
+       router.replace('/dashboard')
   }
 
   return (

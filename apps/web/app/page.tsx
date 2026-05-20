@@ -1,7 +1,7 @@
   "use client"
   import React, { useEffect } from "react";
 import { useLoggedIn } from "~/hooks/api/auth";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
   
 
   export default function Home() {

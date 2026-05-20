@@ -12,6 +12,7 @@ import {
 } from "~/components/ui/field"
 import { Input } from "~/components/ui/input"
 import { useSignInForm } from "~/hooks/api/auth"
+import { useRouter } from "next/navigation"
 
 type LoginFormData = {
   email: string
@@ -27,6 +28,7 @@ export function LoginForm({
     handleSubmit,
     formState: { errors },
   } = useForm<LoginFormData>()
+  const router=useRouter()
 
     const {signInUserWithEmailAndPasswordAsync,
       error,
@@ -40,6 +42,7 @@ export function LoginForm({
       email: data.email,
       password: data.password,
     })
+     router.replace('/dashboard')
   
   }
 
