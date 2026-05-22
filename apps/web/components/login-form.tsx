@@ -13,6 +13,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { useSignInForm } from "~/hooks/api/auth"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 type LoginFormData = {
   email: string
@@ -84,12 +85,7 @@ export function LoginForm({
           <div className="flex items-center">
             <FieldLabel htmlFor="password">Password</FieldLabel>
 
-            <a
-              href="#"
-              className="ml-auto text-sm underline-offset-4 hover:underline"
-            >
-              Forgot your password?
-            </a>
+
           </div>
 
           <Input
@@ -148,9 +144,9 @@ export function LoginForm({
 
           <FieldDescription className="text-center">
             Don&apos;t have an account?{" "}
-            <a href="/signup" className="underline underline-offset-4">
+            <Link href="/signup" className="underline underline-offset-4">
               Sign up
-            </a>
+            </Link>
           </FieldDescription>
         </Field>
       </FieldGroup>

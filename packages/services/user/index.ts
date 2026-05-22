@@ -45,9 +45,9 @@ class UserServices {
          profileImageUrl:usersTable.profileImageUrl
       }).from(usersTable).where(eq(usersTable.id,id))
 
-      if(!user || user.length===0) throw new Error('invalid user')
+      if(!user || user.length===0 || !user[0]) throw new Error('invalid user')
 
-         return user[0]!
+         return user[0]
    }
 
 

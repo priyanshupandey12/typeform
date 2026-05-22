@@ -13,6 +13,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { useSignUpForm } from "~/hooks/api/auth"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 type SignupFormValues = {
   name: string
@@ -181,7 +182,7 @@ export function SignupForm({
             Sign up with Google
           </Button>
           <FieldDescription className="px-6 text-center">
-            Already have an account? <a href="#">Sign in</a>
+            Already have an account? <Link href="/login">Sign in</Link>
           </FieldDescription>
         </Field>
       </FieldGroup>

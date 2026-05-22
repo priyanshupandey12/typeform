@@ -15,6 +15,20 @@
       "when": 1779194706209,
       "tag": "0001_skinny_arclight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779445883833,
+      "tag": "0002_dusty_kitty_pryde",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1779445983746,
+      "tag": "0003_peaceful_punisher",
+      "breakpoints": true
     }
   ]
 }
