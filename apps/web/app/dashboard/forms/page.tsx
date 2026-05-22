@@ -4,6 +4,9 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { DashboardLayout } from "~/components/dashboard-layout"
 import { Button } from "~/components/ui/button"
+import { useListFormsByUserId } from "~/hooks/api/form"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table"
+import { Badge } from "~/components/ui/badge"
 
 import {
   Dialog,
@@ -33,6 +36,8 @@ import {
 } from "~/components/ui/select"
 
 import { useCreateForm } from "~/hooks/api/form"
+import { IconExternalLink } from "@tabler/icons-react"
+import Link  from "next/link"
 
 type CreateFormData = {
   title: string
@@ -215,23 +220,74 @@ export function CreateFormButton() {
 }
 
 export default function Page() {
+  const { listFormsByUserIdData, isLoading } = useListFormsByUserId()
+
   return (
     <DashboardLayout>
-    <div className="p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">
-            Forms
-          </h1>
-
-          <p className="text-muted-foreground">
-            Manage your forms
-          </p>
+      <div className="px-4 lg:px-6 flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Forms</h1>
+            <p className="text-muted-foreground">Manage your forms</p>
+          </div>
+          <CreateFormButton />
         </div>
 
-        <CreateFormButton />
+        <div className="rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Slug</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Visibility</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {isLoading && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                    Loading forms...
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {!isLoading && listFormsByUserIdData?.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-10">
+                    No forms yet. Create your first one!
+                  </TableCell>
+                </TableRow>
+              )}
+
+              {listFormsByUserIdData?.map((form) => (
+                <TableRow key={form.id}>
+                  <TableCell className="font-medium">{form.title}</TableCell>
+                  <TableCell className="text-muted-foreground">{form.slug}</TableCell>
+                  <TableCell>
+                    <Badge variant={form.status === "published" ? "default" : "secondary"}>
+                      {form.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{form.visibility}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Link
+                      href={`/dashboard/forms/${form.id}`}
+                      className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                    >
+                      Edit <IconExternalLink className="size-3.5" />
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-    </div>
-  </DashboardLayout>
+    </DashboardLayout>
   )
 }

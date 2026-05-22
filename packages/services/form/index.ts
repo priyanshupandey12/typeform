@@ -1,6 +1,7 @@
-import { db ,eq} from "@repo/database";
+import { db, eq, and } from "@repo/database";
 import { formsTable } from "@repo/database/models/form";
-import  { CreateFormInput, listFormsByUserIdInput,ListFormsByUserIdInputType } from "./model";
+import  { CreateFormInput, listFormsByUserIdInput, ListFormsByUserIdInputType, getFormByIdInput, GetFormByIdInputType } from "./model";
+import { formfieldsTable } from "@repo/database/models/form-field";
 
 class FormServices {
 
@@ -68,6 +69,57 @@ class FormServices {
   }
 
 
+  public async getFormById(payload: GetFormByIdInputType) {
+    const { formId } = await getFormByIdInput.parseAsync(payload);
+
+    const rows = await db
+      .select({
+        form: {
+          id: formsTable.id,
+          title: formsTable.title,
+          description: formsTable.description,
+          slug: formsTable.slug,
+          status: formsTable.status,
+          visibility: formsTable.visibility,
+          responseLimit: formsTable.responseLimit,
+          expiresAt: formsTable.expiresAt,
+        },
+        field: {
+          id: formfieldsTable.id,
+          label: formfieldsTable.label,
+          labelKey: formfieldsTable.labelKey,
+          description: formfieldsTable.description,
+          placeholder: formfieldsTable.placeholder,
+          isRequired: formfieldsTable.isRequired,
+          orderIndex: formfieldsTable.orderIndex,
+          fieldType: formfieldsTable.fieldType,
+          options: formfieldsTable.options,
+          validations: formfieldsTable.validations,
+          conditionalLogic: formfieldsTable.conditionalLogic,
+        },
+      })
+      .from(formsTable)
+      .leftJoin(formfieldsTable, eq(formfieldsTable.formId, formsTable.id))
+      .where(
+        and(
+          eq(formsTable.id, formId),
+          eq(formsTable.status, "published")
+        )
+      )
+      .orderBy(formfieldsTable.orderIndex);
+
+    if (!rows.length || !rows[0]?.form) throw new Error("Form not found");
+
+    const form = rows[0].form;
+    const fields = rows
+      .filter((row) => row.field?.id !== null && row.field?.id !== undefined)
+      .map((row) => row.field!);
+
+    return {
+      ...form,
+      fields,
+    };
+  }
 }
 
 export default FormServices;

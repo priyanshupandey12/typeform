@@ -1,7 +1,9 @@
-import { authenticatedProcedure, router } from "../../trpc";
-import { formService } from "../../services";
+import { authenticatedProcedure, publicProcedure, router } from "../../trpc";
+import { formService ,formFieldService} from "../../services";
 import { generatePath } from "../../utils/path-generator";
-import { createFormInput, createFormOutput } from "./model";
+import { createFormInput, createFormOutput, listFormsByUserIdOutput ,createFormFieldInput,createFormFieldOutput,deleteFormFieldInput,deleteFormFieldOutput,listFormFieldsInput
+,listFormFieldsOutput,updateFormFieldInput,updateFormFieldOutput,getFormByIdInput,getFormByIdOutput} from "./model";
+import z from "zod";
 
 const TAGS = ["Form"];
 const getPath = generatePath("/form");
@@ -45,5 +47,99 @@ export const formRouter = router({
       return {
         id,
       };
+    }),
+
+    listFormsByUserId: authenticatedProcedure.meta({
+      openapi: {
+        method: "GET",
+        path: getPath("/ListFormsByUserId"),
+        tags: TAGS,
+        protect: true,
+      },
+    })
+    .input(z.undefined())
+    .output(listFormsByUserIdOutput)
+    .query(async ({  ctx }) => {
+
+      const forms = await formService.listFormsByUserId({
+        userId: ctx.user.id,
+      });
+
+      return forms;
+    }),
+
+      createFormField: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/CreateFormField"),
+        tags: TAGS,
+        protect: true,
+      },
+    })
+    .input(createFormFieldInput)
+    .output(createFormFieldOutput)
+    .mutation(async ({ input }) => {
+      return formFieldService.createFormField(input);
+    }),
+
+  updateFormField: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "PATCH",
+        path: getPath("/UpdateFormField"),
+        tags: TAGS,
+        protect: true,
+      },
+    })
+    .input(updateFormFieldInput)
+    .output(updateFormFieldOutput)
+    .mutation(async ({ input }) => {
+      return formFieldService.updateFormField(input);
+    }),
+
+  deleteFormField: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "DELETE",
+        path: getPath("/DeleteFormField"),
+        tags: TAGS,
+        protect: true,
+      },
+    })
+    .input(deleteFormFieldInput)
+    .output(deleteFormFieldOutput)
+    .mutation(async ({ input }) => {
+      return formFieldService.deleteFormField(input);
+    }),
+
+  listFormFields: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: getPath("/ListFormFields"),
+        tags: TAGS,
+        protect: true,
+      },
+    })
+    .input(listFormFieldsInput)
+    .output(listFormFieldsOutput)
+    .query(async ({ input }) => {
+      return formFieldService.listFormFields({ id: input.formId });
+    }),
+
+  getFormById: publicProcedure
+    .meta({
+      openapi: {
+        method: "GET",
+        path: getPath("/GetFormById"),
+        tags: TAGS,
+        protect: false,
+      },
+    })
+    .input(getFormByIdInput)
+    .output(getFormByIdOutput)
+    .query(async ({ input }) => {
+      return formService.getFormById({ formId: input.formId });
     }),
 });
