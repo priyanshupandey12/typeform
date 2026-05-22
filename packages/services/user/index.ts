@@ -37,7 +37,7 @@ class UserServices {
 
    }
 
-   private async getVerifiedUserInfoById(id:string) {
+   public async getVerifiedUserInfoById(id:string) {
       const user= await db.select({
          id:usersTable.id,
          email:usersTable.email,
@@ -111,10 +111,8 @@ class UserServices {
 
    public async VerifyAndDecodeToken(token:string) {
      const {id}=await this.verifyToken(token)
-
-     const userInfo =await this.getVerifiedUserInfoById(id)
      return {
-      ...userInfo
+      id
      }
      
    }
