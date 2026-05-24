@@ -117,6 +117,9 @@ export default function HomePage() {
           </Link>
 
           <div className="hidden items-center gap-8 text-sm text-[#787774] md:flex">
+            <Link href="/explore" className="text-[#111111] font-medium">
+              Explore
+            </Link>
             <Link href="#features" className="hover:text-[#111111]">
               Features
             </Link>

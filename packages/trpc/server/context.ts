@@ -10,6 +10,8 @@ export interface TRPCContext {
    clearCookie:ReturnType<typeof ClearCookieFactory>
    getCookie:ReturnType<typeof getCookieFactory>
    user?:TRPCCtxUser
+   ip:string
+   userAgent:string
 }
 
 export async function createContext({req,res}:CreateExpressContextOptions):Promise<TRPCContext> {
@@ -17,7 +19,9 @@ export async function createContext({req,res}:CreateExpressContextOptions):Promi
    createCookie:createCookieFactory(res),
    clearCookie: ClearCookieFactory(res),
    getCookie: getCookieFactory(req),
-   user:undefined
+   user:undefined,
+   ip: (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown',
+   userAgent: req.headers['user-agent'] || 'unknown',
     }
   return ctx
 }

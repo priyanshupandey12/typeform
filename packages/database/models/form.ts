@@ -58,7 +58,7 @@ export const formsTable = pgTable(
 
   (table) => {
     return {
-      slugCreatedByIndex: uniqueIndex("slug_created_by_index").on(table.slug, table.createdBy),
+      slugIndex: uniqueIndex("slug_index").on(table.slug, table.createdBy),
     }
   }
 );

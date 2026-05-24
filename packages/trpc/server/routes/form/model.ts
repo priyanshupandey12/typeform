@@ -14,7 +14,7 @@ export const createFormInput = z.object({
     .optional(),
   password: z.string().describe("password of the form").optional(),
   responseLimit: z.number().describe("response limit of the form").optional(),
-  expiresAt: z.date().describe("expiration date of the form").optional(),
+  expiresAt: z.coerce.date().describe("expiration date of the form").optional(),
 });
 
 export const createFormOutput = z.object({
@@ -61,6 +61,8 @@ export const listFormsByUserIdOutput = z.array(
       .nullable()
       .optional()
       .describe("expiration date of the form"),
+
+    createdBy: z.string().describe("uuid of the user who created the form"),
   })
 );
 
@@ -136,6 +138,7 @@ export const getFormByIdOutput = z.object({
   slug: z.string().describe("slug of the form"),
   status: z.enum(["draft", "published"]).optional().describe("status of the form"),
   visibility: z.enum(["public", "unlisted"]).optional().describe("visibility of the form"),
+  isPasswordProtected: z.boolean().optional().describe("whether the form is password protected"),
   responseLimit: z.number().nullable().optional().describe("response limit"),
   expiresAt: z.date().nullable().optional().describe("expiration date"),
   fields: z.array(
@@ -154,3 +157,111 @@ export const getFormByIdOutput = z.object({
     })
   ),
 });
+
+export const createFormSubmissionInput = z.object({
+  formId: z.string().uuid().describe("uuid of the form being submitted"),
+  values: z.array(
+    z.object({
+      fieldId: z.string().uuid().describe("uuid of the form field"),
+      value: z.string().describe("the user's answer"),
+    })
+  ).min(1).describe("array of field answers"),
+});
+
+export const createFormSubmissionOutput = z.object({
+  id: z.string().uuid().describe("submission id"),
+});
+
+export const getSubmissionsByFormIdInput = z.object({
+  formId: z.string().uuid().describe("uuid of the form whose submissions are to be retrieved"),
+});
+
+export const getSubmissionsByFormIdOutput = z.array(
+  z.object({
+    id: z.string().uuid(),
+    formId: z.string().uuid(),
+    values: z.array(
+      z.object({
+        fieldId: z.string().uuid(),
+        value: z.union([
+          z.string(),
+          z.number(),
+          z.boolean(),
+          z.array(z.string()),
+          z.null(),
+        ]),
+      })
+    ).nullable(),
+    createdAt: z.date(),
+  })
+);
+
+export const updateFormInput = z.object({
+  id: z.string().uuid().describe("uuid of the form to update"),
+  title: z.string().describe("title of the form").optional(),
+  description: z.string().describe("description of the form").optional(),
+  slug: z.string().describe("slug of the form").optional(),
+  status: z.enum(["draft", "published"]).describe("status of the form").optional(),
+  visibility: z
+    .enum(["public", "unlisted"])
+    .describe("visibility of the form")
+    .optional(),
+  password: z.string().describe("password of the form").optional(),
+  responseLimit: z.number().describe("response limit of the form").optional(),
+  expiresAt: z.coerce.date().describe("expiration date of the form").optional(),
+});
+
+export const updateFormOutput = z.object({
+  id: z.string().uuid(),
+});
+
+export const deleteFormInput = z.object({
+  id: z.string().uuid().describe("uuid of the form to delete"),
+});
+
+export const deleteFormOutput = z.object({
+  id: z.string().uuid(),
+});
+
+export const getFormBySlugInput = z.object({
+  slug: z.string().describe("slug of the form to retrieve"),
+  password: z.string().optional().describe("password to unlock form if protected"),
+});
+
+export const getFormBySlugOutput = getFormByIdOutput;
+
+export const getDashboardAnalyticsInput = z.undefined();
+
+export const getDashboardAnalyticsOutput = z.object({
+  totalForms: z.number(),
+  activeForms: z.number(),
+  totalSubmissions: z.number(),
+  recentSubmissions: z.array(
+    z.object({
+      id: z.string().uuid(),
+      formId: z.string().uuid(),
+      formTitle: z.string(),
+      createdAt: z.date().nullable(),
+    })
+  ),
+  chartData: z.array(
+    z.object({
+      date: z.string(),
+      submissions: z.number(),
+    })
+  ),
+});
+
+export const getPublicFormsInput = z.object({
+  limit: z.number().optional().default(20),
+});
+
+export const getPublicFormsOutput = z.array(
+  z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    description: z.string().nullable().optional(),
+    slug: z.string(),
+    isPasswordProtected: z.boolean(),
+  })
+);

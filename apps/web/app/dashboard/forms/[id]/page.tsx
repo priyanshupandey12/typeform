@@ -10,6 +10,8 @@ import { Input } from "~/components/ui/input"
 import { Textarea } from "~/components/ui/textarea"
 import { Switch } from "~/components/ui/switch"
 import { Separator } from "~/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
+import { ResponsesTab } from "./responses-tab"
 
 import {
   Dialog,
@@ -59,6 +61,7 @@ import {
   IconEdit,
   IconTrash,
   IconGripVertical,
+  IconInbox,
 } from "@tabler/icons-react"
 
 // ── Types ──────────────────────────────────────────────
@@ -86,6 +89,7 @@ type CreateFormFieldData = {
   placeholder?: string
   isRequired: boolean
   fieldType: FieldType
+  optionsString?: string
 }
 
 type UpdateFormFieldData = {
@@ -95,6 +99,7 @@ type UpdateFormFieldData = {
   isRequired?: boolean
   fieldType?: FieldType
   orderIndex?: string
+  optionsString?: string
 }
 
 // ── Field type display helpers ─────────────────────────
@@ -142,6 +147,7 @@ function AddFieldDialog({ formId }: { formId: string }) {
     setValue,
     reset,
     control,
+    watch,
   } = useForm<CreateFormFieldData>({
     defaultValues: {
       label: "",
@@ -149,8 +155,11 @@ function AddFieldDialog({ formId }: { formId: string }) {
       placeholder: "",
       isRequired: false,
       fieldType: "TEXT",
+      optionsString: "",
     },
   })
+
+  const currentFieldType = watch("fieldType")
 
   const {
     createFormFieldAsync,
@@ -161,9 +170,15 @@ function AddFieldDialog({ formId }: { formId: string }) {
 
   const onSubmit = async (data: CreateFormFieldData) => {
     try {
+      const options =
+        data.optionsString && ["SELECT", "RADIO", "CHECKBOX"].includes(data.fieldType)
+          ? data.optionsString.split(",").map((opt) => ({ label: opt.trim(), value: opt.trim() })).filter(opt => opt.value !== "")
+          : undefined
+
       await createFormFieldAsync({
         formId,
         ...data,
+        options,
       })
       reset()
       setOpen(false)
@@ -239,6 +254,16 @@ function AddFieldDialog({ formId }: { formId: string }) {
               />
             </Field>
 
+            {["SELECT", "RADIO", "CHECKBOX"].includes(currentFieldType) && (
+              <Field>
+                <FieldLabel>Options (comma separated)</FieldLabel>
+                <Textarea
+                  placeholder="e.g. Option A, Option B, Option C"
+                  {...register("optionsString")}
+                />
+              </Field>
+            )}
+
             <Field orientation="horizontal">
               <FieldLabel>Required</FieldLabel>
               <Controller
@@ -287,6 +312,7 @@ function EditFieldDialog({
     isRequired: boolean
     fieldType: string
     orderIndex: string
+    options?: any
   }
 }) {
   const [open, setOpen] = useState(false)
@@ -296,6 +322,7 @@ function EditFieldDialog({
     handleSubmit,
     setValue,
     control,
+    watch,
   } = useForm<UpdateFormFieldData>({
     defaultValues: {
       label: field.label,
@@ -303,8 +330,11 @@ function EditFieldDialog({
       placeholder: field.placeholder ?? "",
       isRequired: field.isRequired,
       fieldType: field.fieldType as FieldType,
+      optionsString: Array.isArray(field.options) ? field.options.map(opt => opt.value).join(", ") : "",
     },
   })
+
+  const currentFieldType = watch("fieldType")
 
   const {
     updateFormFieldAsync,
@@ -315,9 +345,15 @@ function EditFieldDialog({
 
   const onSubmit = async (data: UpdateFormFieldData) => {
     try {
+      const options =
+        data.optionsString && data.fieldType && ["SELECT", "RADIO", "CHECKBOX"].includes(data.fieldType)
+          ? data.optionsString.split(",").map((opt) => ({ label: opt.trim(), value: opt.trim() })).filter(opt => opt.value !== "")
+          : undefined
+
       await updateFormFieldAsync({
         id: field.id,
         ...data,
+        options,
       })
       setOpen(false)
     } catch (err) {
@@ -390,6 +426,16 @@ function EditFieldDialog({
                 {...register("placeholder")}
               />
             </Field>
+
+            {currentFieldType && ["SELECT", "RADIO", "CHECKBOX"].includes(currentFieldType) && (
+              <Field>
+                <FieldLabel>Options (comma separated)</FieldLabel>
+                <Textarea
+                  placeholder="e.g. Option A, Option B, Option C"
+                  {...register("optionsString")}
+                />
+              </Field>
+            )}
 
             <Field orientation="horizontal">
               <FieldLabel>Required</FieldLabel>
@@ -553,41 +599,56 @@ export default function FormBuilderPage({
   return (
     <DashboardLayout>
       <div className="px-4 lg:px-6 flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/dashboard/forms">
-                <IconArrowLeft className="size-4" />
-                Back to Forms
-              </Link>
-            </Button>
-            <Separator orientation="vertical" className="h-6" />
-            <h1 className="text-2xl font-bold">Form Builder</h1>
+        <Tabs defaultValue="builder" className="w-full">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/forms">
+                  <IconArrowLeft className="size-4" />
+                  Back to Forms
+                </Link>
+              </Button>
+              <Separator orientation="vertical" className="h-6" />
+              <h1 className="text-2xl font-bold">Form Management</h1>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <TabsList>
+                <TabsTrigger value="builder">Builder</TabsTrigger>
+                <TabsTrigger value="responses">Responses</TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
-          <AddFieldDialog formId={id} />
-        </div>
-
-        {/* Fields list */}
-        <div className="flex flex-col gap-3">
-          {isLoading && (
-            <div className="rounded-lg border border-dashed flex items-center justify-center h-48 text-muted-foreground">
-              Loading fields...
-            </div>
-          )}
-
-          {!isLoading && (!listFormFieldsData || listFormFieldsData.length === 0) && (
-            <div className="rounded-lg border border-dashed flex flex-col items-center justify-center h-48 gap-3 text-muted-foreground">
-              <p>No fields yet. Add your first field to get started.</p>
+          <TabsContent value="builder" className="flex flex-col gap-3 mt-0">
+            <div className="flex justify-end mb-2">
               <AddFieldDialog formId={id} />
             </div>
-          )}
 
-          {listFormFieldsData?.map((field, index) => (
-            <FieldCard key={field.id} field={field} index={index} />
-          ))}
-        </div>
+            {/* Fields list */}
+            {isLoading && (
+              <div className="rounded-lg border border-dashed flex items-center justify-center h-48 text-muted-foreground">
+                Loading fields...
+              </div>
+            )}
+
+            {!isLoading && (!listFormFieldsData || listFormFieldsData.length === 0) && (
+              <div className="rounded-lg border border-dashed flex flex-col items-center justify-center h-48 gap-3 text-muted-foreground">
+                <p>No fields yet. Add your first field to get started.</p>
+                <AddFieldDialog formId={id} />
+              </div>
+            )}
+
+            {listFormFieldsData?.map((field, index) => (
+              <FieldCard key={field.id} field={field} index={index} />
+            ))}
+          </TabsContent>
+
+          <TabsContent value="responses" className="mt-0">
+            <ResponsesTab formId={id} />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   )
