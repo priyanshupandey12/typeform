@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useGetPublicForms } from "~/hooks/api/form"
 import { IconLoader2, IconLock, IconArrowRight } from "@tabler/icons-react"
 import { Reveal } from "~/components/reveal"
+import { AuthHeaderLinks } from "~/components/auth-header-links"
 
 export default function ExplorePage() {
   const { forms, isLoading } = useGetPublicForms(50)
@@ -27,17 +28,11 @@ export default function ExplorePage() {
             <Link href="/#pricing" className="hover:text-[#111111]">
               Pricing
             </Link>
-            <Link href="/login" className="hover:text-[#111111]">
-              Login
-            </Link>
           </div>
 
-          <Link
-            href="/signup"
-            className="rounded-md bg-[#111111] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#333333] active:scale-[0.98]"
-          >
-            Get started
-          </Link>
+          <div className="flex items-center gap-4">
+            <AuthHeaderLinks />
+          </div>
         </nav>
       </header>
 

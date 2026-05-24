@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Reveal } from "~/components/reveal"
+import { AuthHeaderLinks } from "~/components/auth-header-links"
 
 const useCases = [
   ["Customer feedback", "Learn what people liked, what felt unclear, and what should change next."],
@@ -129,17 +130,11 @@ export default function HomePage() {
             <Link href="#pricing" className="hover:text-[#111111]">
               Pricing
             </Link>
-            <Link href="/login" className="hover:text-[#111111]">
-              Login
-            </Link>
           </div>
 
-          <Link
-            href="/signup"
-            className="rounded-md bg-[#111111] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#333333] active:scale-[0.98]"
-          >
-            Get started
-          </Link>
+          <div className="flex items-center gap-4">
+            <AuthHeaderLinks />
+          </div>
         </nav>
       </header>
 

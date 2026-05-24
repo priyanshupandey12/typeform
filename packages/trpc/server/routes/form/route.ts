@@ -219,8 +219,7 @@ export const formRouter = router({
     .input(getFormBySlugInput)
     .output(getFormBySlugOutput)
     .query(async ({ input }) => {
-      const { slug } = input;
-      const form = await formService.getFormBySlug({ slug });
+      const form = await formService.getFormBySlug(input);
       return form;
     }),
 
