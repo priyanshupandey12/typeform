@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Reveal } from "~/components/reveal"
 import { AuthHeaderLinks } from "~/components/auth-header-links"
+import { AnimatedHeroForm } from "~/components/animated-hero-form"
 
 const useCases = [
   ["Customer feedback", "Learn what people liked, what felt unclear, and what should change next."],
@@ -175,62 +176,7 @@ export default function HomePage() {
         </Reveal>
 
         <Reveal delay={120} className="flex items-center animate-soft-enter [animation-delay:160ms]">
-          <div className="w-full rounded-xl border border-[#EAEAEA] bg-white">
-            <div className="flex h-11 items-center gap-2 border-b border-[#EAEAEA] px-4">
-              <span className="size-2.5 rounded-full bg-[#EAEAEA]" />
-              <span className="size-2.5 rounded-full bg-[#EAEAEA]" />
-              <span className="size-2.5 rounded-full bg-[#EAEAEA]" />
-            </div>
-
-            <div className="p-6 md:p-8">
-              <div className="mb-6 flex items-start justify-between gap-6">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.12em] text-[#787774]">
-                    Live form
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em]">
-                    Customer feedback
-                  </h2>
-                </div>
-                <span className="rounded-full bg-[#EDF3EC] px-3 py-1 text-xs font-medium uppercase tracking-[0.1em] text-[#346538]">
-                  Public
-                </span>
-              </div>
-
-              <div className="space-y-5">
-                <div>
-                  <label className="mb-2 block text-sm font-medium">
-                    How was your experience?
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {["Excellent", "Good", "Okay", "Poor"].map((item) => (
-                      <button
-                        key={item}
-                        className="rounded-lg border border-[#EAEAEA] bg-[#FBFBFA] px-4 py-3 text-left text-sm transition hover:bg-[#F7F6F3] active:scale-[0.98]"
-                      >
-                        {item}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 border-t border-[#EAEAEA] pt-5">
-                  <div>
-                    <p className="[font-family:'Geist_Mono','SF_Mono',monospace] text-3xl font-semibold">
-                      327
-                    </p>
-                    <p className="mt-1 text-sm text-[#787774]">responses</p>
-                  </div>
-                  <div>
-                    <p className="[font-family:'Geist_Mono','SF_Mono',monospace] text-3xl font-semibold">
-                      82%
-                    </p>
-                    <p className="mt-1 text-sm text-[#787774]">completion</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AnimatedHeroForm />
         </Reveal>
       </section>
 
