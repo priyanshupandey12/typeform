@@ -67,6 +67,27 @@ export const useLoggedIn =()=> {
    error,
    isFetched,
    isFetching,
+   isLoading: status === "pending",
+   isError: status === "error",
    status
  }
 }
+
+export const useSignOut = () => {
+  const utils = trpc.useUtils();
+  const {
+    mutateAsync: signOutAsync,
+    mutate: signOut,
+    status
+  } = trpc.auth.signOut.useMutation({
+    onSuccess: async () => {
+      utils.auth.getLoggedInUserInfo.reset(); // clear cache
+    }
+  });
+
+  return {
+    signOutAsync,
+    signOut,
+    isLoading: status === "pending",
+  };
+};

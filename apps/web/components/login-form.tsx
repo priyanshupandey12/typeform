@@ -47,6 +47,14 @@ export function LoginForm({
   
   }
 
+  const handleDemoLogin = async () => {
+    await signInUserWithEmailAndPasswordAsync({
+      email: "demo@sagaforms.com",
+      password: "demo1234",
+    })
+    router.replace('/dashboard')
+  }
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -107,7 +115,14 @@ export function LoginForm({
   <Button type="submit" className="w-full">
     Login
   </Button>
-  <FieldDescription className="text-center">
+  
+  <FieldSeparator>Or for Hackathon Judges</FieldSeparator>
+  
+  <Button type="button" variant="secondary" className="w-full" onClick={handleDemoLogin}>
+    Log in as Demo User
+  </Button>
+
+  <FieldDescription className="text-center mt-4">
     Don&apos;t have an account?{" "}
     <Link href="/signup" className="underline underline-offset-4">
       Sign up

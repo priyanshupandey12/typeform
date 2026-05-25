@@ -11,8 +11,12 @@ import { serverRouter, createContext } from "@repo/trpc/server";
 import { env } from "./env";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 
 export const app = express();
+
+// Apply security headers
+
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -55,7 +59,11 @@ app.get("/openapi.json", (req, res) => {
 });
 
 logger.debug(`docs: ${env.BASE_URL}/docs`);
-app.use("/docs", apiReference({ url: "/openapi.json" }));
+app.use("/docs", apiReference({ 
+  spec: {
+    content: openApiDocument,
+  }
+}));
 
 app.use(
   "/api",
