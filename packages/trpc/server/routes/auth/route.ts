@@ -4,7 +4,6 @@ import { generatePath } from "../../utils/path-generator";
 import { createEmailWithUserAndPasswordOutput ,SignInEmailWithUserAndPasswordOutput,SignInEmailWithUserAndPasswordInput,getUserloggedInInfoInput,getUserloggedInInfoOutput,signOutInput,signOutOutput} from "./model";
 import { userService } from "../../services";
 import { getAuthenticationCookie, setAuthenticationCookie, clearAuthenticationCookie } from "../../utils/cookie";
-import z from "zod";
 
 
 const TAGS = ["Authentication"];

@@ -57,10 +57,6 @@ export function NavMain({
               className="size-8 group-data-[collapsible=icon]:opacity-0"
               variant="outline"
             >
-              <Link href="/dashboard/forms" onClick={closeMobileSidebar}>
-                <IconMail />
-                <span className="sr-only">Inbox</span>
-              </Link>
             </Button>
           </SidebarMenuItem>
         </SidebarMenu>
