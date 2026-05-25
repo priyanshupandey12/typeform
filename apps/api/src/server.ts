@@ -10,8 +10,20 @@ import { serverRouter, createContext } from "@repo/trpc/server";
 
 import { env } from "./env";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 
 export const app = express();
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per `window`
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: { error: "Too many requests from this IP, please try again after 15 minutes" }
+});
+
+// Apply rate limiting to all /trpc routes
+app.use("/trpc", limiter);
 const openApiDocument = generateOpenApiDocument(serverRouter, {
   title: "Streamyst OpenAPI",
   version: "1.0.0",

@@ -8,6 +8,9 @@ import {
   getSubmissionsByFormIdInput,
   GetSubmissionsByFormIdInputType,
 } from "./model";
+import { usersTable } from "@repo/database/models/user";
+import { formfieldsTable } from "@repo/database/models/form-field";
+import { sendCreatorNotification, sendRespondentNotification } from "../email";
 
 class FormSubmissionService {
 
@@ -18,14 +21,18 @@ class FormSubmissionService {
   public async createSubmission(payload: CreateFormSubmissionInputType) {
     const { formId, values, ip, userAgent } = await createFormSubmissionInput.parseAsync(payload);
 
-    // Verify form exists and is published
+    // Verify form exists and is published, and fetch creator info
     const form = await db
       .select({ 
         id: formsTable.id,
+        title: formsTable.title,
         expiresAt: formsTable.expiresAt,
-        responseLimit: formsTable.responseLimit
+        responseLimit: formsTable.responseLimit,
+        creatorEmail: usersTable.email,
+        creatorName: usersTable.fullName
       })
       .from(formsTable)
+      .leftJoin(usersTable, eq(formsTable.createdBy, usersTable.id))
       .where(
         and(
           eq(formsTable.id, formId),
@@ -80,6 +87,39 @@ class FormSubmissionService {
       .returning({ id: formSubmissionsTable.id });
 
     if (!result[0]?.id) throw new Error("Something went wrong");
+
+    // Notifications
+    const { title: formTitle, creatorEmail, creatorName } = form[0];
+
+    // 1. Send Creator Notification
+    if (creatorEmail) {
+      await sendCreatorNotification({
+        toEmail: creatorEmail,
+        creatorName: creatorName || "Creator",
+        formTitle,
+      });
+    }
+
+    // 2. Find if there's an EMAIL field to send respondent receipt
+    const fields = await db
+      .select({ id: formfieldsTable.id, fieldType: formfieldsTable.fieldType })
+      .from(formfieldsTable)
+      .where(eq(formfieldsTable.formId, formId));
+
+    const emailFields = fields.filter((f) => f.fieldType === "EMAIL");
+
+    // For each email field, if a value was provided, send a receipt.
+    // (Assuming values is a JSON record keyed by field.id)
+    const valuesRecord = values as Record<string, any>;
+    for (const ef of emailFields) {
+      const respondentEmail = valuesRecord[ef.id];
+      if (respondentEmail && typeof respondentEmail === "string" && respondentEmail.includes("@")) {
+        await sendRespondentNotification({
+          toEmail: respondentEmail,
+          formTitle,
+        });
+      }
+    }
 
     return { id: result[0].id };
   }

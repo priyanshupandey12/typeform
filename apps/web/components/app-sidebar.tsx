@@ -5,7 +5,6 @@ import {
   IconClipboardText,
   IconDashboard,
   IconInnerShadowTop,
-  IconSettings,
 } from "@tabler/icons-react"
 import Link from "next/link"
 
