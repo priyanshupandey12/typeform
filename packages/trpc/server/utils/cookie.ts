@@ -12,13 +12,14 @@ const ONE_MONTH = 30 * ONE_DAY;
 const ONE_YEAR = 12*ONE_MONTH;
 
 
+const isProduction = process.env.NODE_ENV === "production" || process.env.NODE_ENV === "prod";
+
 const defaultCookieOption:CookieOptions={
   path:'/',
   httpOnly:true,
-  secure:false,
-  sameSite:'strict',
+  secure: isProduction,
+  sameSite: isProduction ? 'none' : 'lax',
   maxAge:ONE_YEAR
-
 }
 
 export function createCookieFactory(res:Response) {
