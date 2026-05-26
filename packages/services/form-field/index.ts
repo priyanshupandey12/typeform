@@ -10,6 +10,8 @@ import {
     DeleteFormFieldInputType,
     GetFormFieldInput,
     GetFormFieldInputType,
+    UpdateFieldOrderInput,
+    UpdateFieldOrderInputType,
 } from "./model";
 
 class FormFieldService {
@@ -149,11 +151,34 @@ public async listFormFields(formId: GetFormFieldInputType) {
     .where(eq(formfieldsTable.formId, formIdParsed))
     .orderBy(formfieldsTable.orderIndex);
 }
+
+  public async updateFieldOrder(payload: UpdateFieldOrderInputType) {
+    const { formId, fields } = await UpdateFieldOrderInput.parseAsync(payload);
+
+    // Using a transaction to ensure all fields update properly
+    // We use a two-pass approach to avoid PostgreSQL unique constraint violations on (form_id, order_index)
+    await db.transaction(async (tx) => {
+      // Pass 1: Temporarily assign negative indices so they don't collide with existing positive indices
+      for (let i = 0; i < fields.length; i++) {
+        const field = fields[i];
+        if (!field) continue;
+        await tx
+          .update(formfieldsTable)
+          .set({ orderIndex: String(-(i + 1000)) }) // offset by 1000 to be safe
+          .where(and(eq(formfieldsTable.id, field.id), eq(formfieldsTable.formId, formId)));
+      }
+
+      // Pass 2: Assign the final correct indices
+      for (const field of fields) {
+        await tx
+          .update(formfieldsTable)
+          .set({ orderIndex: field.orderIndex })
+          .where(and(eq(formfieldsTable.id, field.id), eq(formfieldsTable.formId, formId)));
+      }
+    });
+
+    return { success: true };
+  }
 }
-
-    
-
-
-
 
 export default FormFieldService;

@@ -100,3 +100,59 @@ export const useListFormFields = (formId: string) => {
     status,
   };
 };
+
+export const useUpdateFieldOrder = () => {
+  const utils = trpc.useUtils();
+  const {
+    mutateAsync: updateFieldOrderAsync,
+    mutate: updateFieldOrder,
+    error,
+    failureCount,
+    isIdle,
+    isError,
+    status,
+  } = trpc.form.updateFieldOrder.useMutation({
+    onMutate: async (newOrder) => {
+      await utils.form.listFormFields.cancel({ formId: newOrder.formId });
+      const previousFields = utils.form.listFormFields.getData({ formId: newOrder.formId });
+      
+      // Optimistically update the cache
+      if (previousFields) {
+        // Create a map of new order indices
+        const orderMap = new Map<string, string>(newOrder.fields.map((f: { id: string, orderIndex: string }) => [f.id, String(f.orderIndex)]));
+        
+        utils.form.listFormFields.setData({ formId: newOrder.formId }, (old) => {
+          if (!old) return old;
+          return [...old].map(field => {
+            if (orderMap.has(field.id)) {
+              return { ...field, orderIndex: orderMap.get(field.id)! };
+            }
+            return field;
+          }).sort((a, b) => parseFloat(String(a.orderIndex) || "0") - parseFloat(String(b.orderIndex) || "0"));
+        });
+      }
+      
+      return { previousFields, formId: newOrder.formId };
+    },
+    onError: (err, newOrder, context) => {
+      if (context?.previousFields) {
+        utils.form.listFormFields.setData({ formId: context.formId }, context.previousFields);
+      }
+    },
+    onSettled: async (data, error, variables, context) => {
+      if (context?.formId) {
+        await utils.form.listFormFields.invalidate({ formId: context.formId });
+      }
+    },
+  });
+
+  return {
+    updateFieldOrderAsync,
+    updateFieldOrder,
+    error,
+    failureCount,
+    isIdle,
+    isError,
+    status,
+  };
+};

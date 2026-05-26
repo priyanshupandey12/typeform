@@ -79,3 +79,15 @@ export const GetFormFieldInput = z.object({
 });
 
 export type GetFormFieldInputType = z.infer<typeof GetFormFieldInput>;
+
+export const UpdateFieldOrderInput = z.object({
+  formId: z.string().uuid(),
+  fields: z.array(
+    z.object({
+      id: z.string().uuid(),
+      orderIndex: z.string(),
+    })
+  )
+});
+
+export type UpdateFieldOrderInputType = z.infer<typeof UpdateFieldOrderInput>;

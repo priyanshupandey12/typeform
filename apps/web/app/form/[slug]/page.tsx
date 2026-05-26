@@ -343,8 +343,38 @@ export default function PublicFormPage({
     const newErrors: Record<string, string> = {}
 
     formData.fields.forEach((field) => {
-      if (field.isRequired && !answers[field.labelKey]) {
+      const val = answers[field.labelKey]
+
+      if (field.isRequired && !val) {
         newErrors[field.labelKey] = "This field is required"
+        return
+      }
+
+      if (val && field.validations) {
+        const v = field.validations as any
+        
+        if (v.min !== undefined && Number(val) < v.min) {
+           newErrors[field.labelKey] = `Value must be at least ${v.min}`
+        }
+        if (v.max !== undefined && Number(val) > v.max) {
+           newErrors[field.labelKey] = `Value must be at most ${v.max}`
+        }
+        if (v.minLength !== undefined && val.length < v.minLength) {
+           newErrors[field.labelKey] = `Must be at least ${v.minLength} characters`
+        }
+        if (v.maxLength !== undefined && val.length > v.maxLength) {
+           newErrors[field.labelKey] = `Must be at most ${v.maxLength} characters`
+        }
+        if (v.pattern) {
+           try {
+             const regex = new RegExp(v.pattern)
+             if (!regex.test(val)) {
+               newErrors[field.labelKey] = `Invalid format`
+             }
+           } catch (e) {
+             console.error("Invalid regex pattern", e)
+           }
+        }
       }
     })
 

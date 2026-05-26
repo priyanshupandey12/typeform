@@ -3,7 +3,7 @@ import { formService, formFieldService, formSubmissionService } from "../../serv
 import { generatePath } from "../../utils/path-generator";
 import { createFormInput, createFormOutput, listFormsByUserIdOutput, createFormFieldInput, createFormFieldOutput, deleteFormFieldInput, deleteFormFieldOutput, listFormFieldsInput,
 listFormFieldsOutput, updateFormFieldInput, updateFormFieldOutput, getFormByIdInput, getFormByIdOutput, createFormSubmissionInput, createFormSubmissionOutput, 
-getSubmissionsByFormIdInput, getSubmissionsByFormIdOutput, updateFormInput, updateFormOutput, deleteFormInput, deleteFormOutput, getFormBySlugInput, getFormBySlugOutput, getDashboardAnalyticsInput, getDashboardAnalyticsOutput, getPublicFormsInput, getPublicFormsOutput} from "./model";
+getSubmissionsByFormIdInput, getSubmissionsByFormIdOutput, updateFormInput, updateFormOutput, deleteFormInput, deleteFormOutput, getFormBySlugInput, getFormBySlugOutput, getDashboardAnalyticsInput, getDashboardAnalyticsOutput, getPublicFormsInput, getPublicFormsOutput, UpdateFieldOrderInput, UpdateFieldOrderOutput} from "./model";
 import z from "zod";
 
 const TAGS = ["Form"];
@@ -112,6 +112,21 @@ export const formRouter = router({
     .output(deleteFormFieldOutput)
     .mutation(async ({ input }) => {
       return formFieldService.deleteFormField(input);
+    }),
+
+  updateFieldOrder: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "PATCH",
+        path: getPath("/UpdateFieldOrder"),
+        tags: TAGS,
+        protect: true,
+      },
+    })
+    .input(UpdateFieldOrderInput)
+    .output(UpdateFieldOrderOutput)
+    .mutation(async ({ input }) => {
+      return formFieldService.updateFieldOrder(input);
     }),
 
   listFormFields: authenticatedProcedure

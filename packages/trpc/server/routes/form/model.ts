@@ -265,3 +265,17 @@ export const getPublicFormsOutput = z.array(
     isPasswordProtected: z.boolean(),
   })
 );
+
+export const UpdateFieldOrderInput = z.object({
+  formId: z.string().uuid(),
+  fields: z.array(
+    z.object({
+      id: z.string().uuid(),
+      orderIndex: z.string(),
+    })
+  )
+});
+
+export const UpdateFieldOrderOutput = z.object({
+  success: z.boolean(),
+});

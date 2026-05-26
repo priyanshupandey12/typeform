@@ -12,6 +12,9 @@ import { Switch } from "~/components/ui/switch"
 import { Separator } from "~/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs"
 import { ResponsesTab } from "./responses-tab"
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core"
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
 
 import {
   Dialog,
@@ -53,6 +56,7 @@ import {
   useUpdateFormField,
   useDeleteFormField,
   useListFormFields,
+  useUpdateFieldOrder,
 } from "~/hooks/api/form-field"
 
 import {
@@ -90,6 +94,11 @@ type CreateFormFieldData = {
   isRequired: boolean
   fieldType: FieldType
   optionsString?: string
+  min?: string
+  max?: string
+  minLength?: string
+  maxLength?: string
+  pattern?: string
 }
 
 type UpdateFormFieldData = {
@@ -100,6 +109,11 @@ type UpdateFormFieldData = {
   fieldType?: FieldType
   orderIndex?: string
   optionsString?: string
+  min?: string
+  max?: string
+  minLength?: string
+  maxLength?: string
+  pattern?: string
 }
 
 // ── Field type display helpers ─────────────────────────
@@ -156,6 +170,11 @@ function AddFieldDialog({ formId }: { formId: string }) {
       isRequired: false,
       fieldType: "TEXT",
       optionsString: "",
+      min: "",
+      max: "",
+      minLength: "",
+      maxLength: "",
+      pattern: "",
     },
   })
 
@@ -175,10 +194,18 @@ function AddFieldDialog({ formId }: { formId: string }) {
           ? data.optionsString.split(",").map((opt) => ({ label: opt.trim(), value: opt.trim() })).filter(opt => opt.value !== "")
           : undefined
 
+      const validations: any = {}
+      if (data.min) validations.min = Number(data.min)
+      if (data.max) validations.max = Number(data.max)
+      if (data.minLength) validations.minLength = Number(data.minLength)
+      if (data.maxLength) validations.maxLength = Number(data.maxLength)
+      if (data.pattern) validations.pattern = data.pattern
+
       await createFormFieldAsync({
         formId,
         ...data,
         options,
+        validations: Object.keys(validations).length > 0 ? validations : undefined,
       })
       reset()
       setOpen(false)
@@ -264,6 +291,38 @@ function AddFieldDialog({ formId }: { formId: string }) {
               </Field>
             )}
 
+            {["NUMBER", "RATING"].includes(currentFieldType) && (
+              <div className="flex gap-4">
+                <Field className="flex-1">
+                  <FieldLabel>Min Value</FieldLabel>
+                  <Input type="number" placeholder="e.g. 0" {...register("min")} />
+                </Field>
+                <Field className="flex-1">
+                  <FieldLabel>Max Value</FieldLabel>
+                  <Input type="number" placeholder="e.g. 10" {...register("max")} />
+                </Field>
+              </div>
+            )}
+
+            {["TEXT", "TEXTAREA", "EMAIL", "PASSWORD"].includes(currentFieldType) && (
+              <>
+                <div className="flex gap-4">
+                  <Field className="flex-1">
+                    <FieldLabel>Min Length</FieldLabel>
+                    <Input type="number" placeholder="e.g. 2" {...register("minLength")} />
+                  </Field>
+                  <Field className="flex-1">
+                    <FieldLabel>Max Length</FieldLabel>
+                    <Input type="number" placeholder="e.g. 255" {...register("maxLength")} />
+                  </Field>
+                </div>
+                <Field>
+                  <FieldLabel>Regex Pattern</FieldLabel>
+                  <Input placeholder="e.g. ^[a-z]+$" {...register("pattern")} />
+                </Field>
+              </>
+            )}
+
             <Field orientation="horizontal">
               <FieldLabel>Required</FieldLabel>
               <Controller
@@ -313,6 +372,7 @@ function EditFieldDialog({
     fieldType: string
     orderIndex: string
     options?: any
+    validations?: any
   }
 }) {
   const [open, setOpen] = useState(false)
@@ -330,7 +390,12 @@ function EditFieldDialog({
       placeholder: field.placeholder ?? "",
       isRequired: field.isRequired,
       fieldType: field.fieldType as FieldType,
-      optionsString: Array.isArray(field.options) ? field.options.map(opt => opt.value).join(", ") : "",
+      optionsString: Array.isArray(field.options) ? field.options.map((opt: any) => opt.value).join(", ") : "",
+      min: field.validations?.min?.toString() ?? "",
+      max: field.validations?.max?.toString() ?? "",
+      minLength: field.validations?.minLength?.toString() ?? "",
+      maxLength: field.validations?.maxLength?.toString() ?? "",
+      pattern: field.validations?.pattern ?? "",
     },
   })
 
@@ -350,10 +415,18 @@ function EditFieldDialog({
           ? data.optionsString.split(",").map((opt) => ({ label: opt.trim(), value: opt.trim() })).filter(opt => opt.value !== "")
           : undefined
 
+      const validations: any = {}
+      if (data.min) validations.min = Number(data.min)
+      if (data.max) validations.max = Number(data.max)
+      if (data.minLength) validations.minLength = Number(data.minLength)
+      if (data.maxLength) validations.maxLength = Number(data.maxLength)
+      if (data.pattern) validations.pattern = data.pattern
+
       await updateFormFieldAsync({
         id: field.id,
         ...data,
         options,
+        validations: Object.keys(validations).length > 0 ? validations : undefined,
       })
       setOpen(false)
     } catch (err) {
@@ -435,6 +508,38 @@ function EditFieldDialog({
                   {...register("optionsString")}
                 />
               </Field>
+            )}
+
+            {currentFieldType && ["NUMBER", "RATING"].includes(currentFieldType) && (
+              <div className="flex gap-4">
+                <Field className="flex-1">
+                  <FieldLabel>Min Value</FieldLabel>
+                  <Input type="number" placeholder="e.g. 0" {...register("min")} />
+                </Field>
+                <Field className="flex-1">
+                  <FieldLabel>Max Value</FieldLabel>
+                  <Input type="number" placeholder="e.g. 10" {...register("max")} />
+                </Field>
+              </div>
+            )}
+
+            {currentFieldType && ["TEXT", "TEXTAREA", "EMAIL", "PASSWORD"].includes(currentFieldType) && (
+              <>
+                <div className="flex gap-4">
+                  <Field className="flex-1">
+                    <FieldLabel>Min Length</FieldLabel>
+                    <Input type="number" placeholder="e.g. 2" {...register("minLength")} />
+                  </Field>
+                  <Field className="flex-1">
+                    <FieldLabel>Max Length</FieldLabel>
+                    <Input type="number" placeholder="e.g. 255" {...register("maxLength")} />
+                  </Field>
+                </div>
+                <Field>
+                  <FieldLabel>Regex Pattern</FieldLabel>
+                  <Input placeholder="e.g. ^[a-z]+$" {...register("pattern")} />
+                </Field>
+              </>
             )}
 
             <Field orientation="horizontal">
@@ -542,11 +647,39 @@ function FieldCard({
   }
   index: number
 }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+    position: "relative" as const,
+  }
+
   return (
-    <div className="group flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex items-start gap-3 rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50 ${
+        isDragging ? "shadow-md opacity-80" : ""
+      }`}
+    >
       {/* Drag handle / index */}
       <div className="flex flex-col items-center gap-1 pt-0.5 text-muted-foreground">
-        <IconGripVertical className="size-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing hover:bg-accent rounded p-1"
+        >
+          <IconGripVertical className="size-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
         <span className="text-xs font-medium tabular-nums">{index + 1}</span>
       </div>
 
@@ -596,6 +729,37 @@ export default function FormBuilderPage({
   const { id } = use(params)
   const { listFormFieldsData, isLoading } = useListFormFields(id)
 
+  const { updateFieldOrderAsync } = useUpdateFieldOrder()
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id || !listFormFieldsData) {
+      return
+    }
+
+    const oldIndex = listFormFieldsData.findIndex((item) => item.id === active.id)
+    const newIndex = listFormFieldsData.findIndex((item) => item.id === over.id)
+
+    const newItems = arrayMove(listFormFieldsData, oldIndex, newIndex)
+    
+    // Assign new sequential order indexes
+    const updatedFields = newItems.map((field, index) => ({
+      id: field.id,
+      orderIndex: (index + 1).toFixed(2)
+    }))
+
+    await updateFieldOrderAsync({
+      formId: id,
+      fields: updatedFields,
+    })
+  }
+
   return (
     <DashboardLayout>
       <div className="px-4 lg:px-6 flex flex-col gap-6">
@@ -640,9 +804,24 @@ export default function FormBuilderPage({
               </div>
             )}
 
-            {listFormFieldsData?.map((field, index) => (
-              <FieldCard key={field.id} field={field} index={index} />
-            ))}
+            {listFormFieldsData && listFormFieldsData.length > 0 && (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={listFormFieldsData.map(f => f.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="flex flex-col gap-3">
+                    {listFormFieldsData.map((field, index) => (
+                      <FieldCard key={field.id} field={field} index={index} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
           </TabsContent>
 
           <TabsContent value="responses" className="mt-0">
