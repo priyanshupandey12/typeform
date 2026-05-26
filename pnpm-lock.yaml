@@ -307,6 +307,15 @@ importers:
 
   packages/database:
     dependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.16.0
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -325,22 +334,12 @@ importers:
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.5
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/pg':
-        specifier: ^8.16.0
-        version: 8.16.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
 
   packages/eslint-config:
     devDependencies:
@@ -380,13 +379,6 @@ importers:
 
   packages/logger:
     dependencies:
-      winston:
-        specifier: ^3.19.0
-        version: 3.19.0
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.5
-    devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -396,31 +388,24 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      winston:
+        specifier: ^3.19.0
+        version: 3.19.0
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
 
   packages/services:
     dependencies:
       '@repo/database':
         specifier: workspace:*
         version: link:../database
-      '@repo/logger':
-        specifier: workspace:*
-        version: link:../logger
-      google-auth-library:
-        specifier: ^10.5.0
-        version: 10.5.0
-      jsonwebtoken:
-        specifier: ^9.0.3
-        version: 9.0.3
-      resend:
-        specifier: ^6.12.3
-        version: 6.12.3
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.5
-    devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@repo/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -433,46 +418,57 @@ importers:
       dotenv-cli:
         specifier: ^11.0.0
         version: 11.0.0
+      google-auth-library:
+        specifier: ^10.5.0
+        version: 10.5.0
+      jsonwebtoken:
+        specifier: ^9.0.3
+        version: 9.0.3
+      resend:
+        specifier: ^6.12.3
+        version: 6.12.3
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
 
   packages/trpc:
     dependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
       '@repo/services':
         specifier: workspace:*
         version: link:../services
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       '@trpc/client':
         specifier: ^11.8.1
         version: 11.8.1(@trpc/server@11.8.1(typescript@5.9.3))(typescript@5.9.3)
       '@trpc/server':
         specifier: ^11.8.1
         version: 11.8.1(typescript@5.9.3)
-      express:
-        specifier: ^5.2.1
-        version: 5.2.1
-      trpc-to-openapi:
-        specifier: ^3.1.0
-        version: 3.1.0(@trpc/server@11.8.1(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.3.5))(zod@4.3.5)
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.5
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
       dotenv-cli:
         specifier: ^11.0.0
         version: 11.0.0
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
+      trpc-to-openapi:
+        specifier: ^3.1.0
+        version: 3.1.0(@trpc/server@11.8.1(typescript@5.9.3))(zod-openapi@5.4.5(zod@4.3.5))(zod@4.3.5)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
 
   packages/typescript-config: {}
 

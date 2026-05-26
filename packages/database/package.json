@@ -7,13 +7,11 @@
     "db:seed": "dotenv -- tsx seed.ts",
     "dev": "dotenv -- drizzle-kit studio"
   },
-  "devDependencies": {
+  "dependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/pg": "^8.16.0",
-    "typescript": "^5.9.3"
-  },
-  "dependencies": {
+    "typescript": "^5.9.3",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
     "pg": "^8.16.3",
