@@ -16,7 +16,7 @@ import helmet from "helmet";
 export const app = express();
 
 // Apply security headers
-
+app.use(helmet());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
