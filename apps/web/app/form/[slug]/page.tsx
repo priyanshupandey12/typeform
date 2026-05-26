@@ -23,6 +23,44 @@ type FormField = {
 
 // ── Field renderer ─────────────────────────────────────────────────────────
 
+function shouldShowField(field: FormField, answers: Record<string, string>): boolean {
+  if (!field.conditionalLogic) return true;
+  
+  const logic = field.conditionalLogic as {
+    fieldKey: string
+    operator: string
+    value: string
+    action: string
+  }
+  
+  const targetValue = answers[logic.fieldKey] || ""
+  
+  let conditionMet = false
+  switch (logic.operator) {
+    case "equals":
+      conditionMet = targetValue === logic.value
+      break
+    case "not_equals":
+      conditionMet = targetValue !== logic.value
+      break
+    case "contains":
+      conditionMet = targetValue.includes(logic.value)
+      break
+    case "is_empty":
+      conditionMet = targetValue.trim() === ""
+      break
+    case "is_not_empty":
+      conditionMet = targetValue.trim() !== ""
+      break
+  }
+  
+  if (logic.action === "show") {
+    return conditionMet
+  } else {
+    return !conditionMet
+  }
+}
+
 function FormFieldInput({
   field,
   value,
@@ -343,6 +381,8 @@ export default function PublicFormPage({
     const newErrors: Record<string, string> = {}
 
     formData.fields.forEach((field) => {
+      if (!shouldShowField(field, answers)) return
+
       const val = answers[field.labelKey]
 
       if (field.isRequired && !val) {
@@ -385,7 +425,7 @@ export default function PublicFormPage({
 
     // Transform { labelKey: value } → { fieldId, value }[]
     const values = formData.fields
-      .filter((field) => answers[field.labelKey])
+      .filter((field) => shouldShowField(field, answers) && answers[field.labelKey])
       .map((field) => ({
         fieldId: field.id,
         value: answers[field.labelKey]!,
@@ -498,7 +538,9 @@ export default function PublicFormPage({
                     </p>
                   )}
 
-                  {formData.fields.map((field) => (
+                  {formData.fields.map((field) => {
+                    if (!shouldShowField(field, answers)) return null;
+                    return (
                     <div key={field.id} className="flex flex-col gap-1.5">
                       {/* Label */}
                       <label
@@ -532,7 +574,7 @@ export default function PublicFormPage({
                         </p>
                       )}
                     </div>
-                  ))}
+                  )})}
                 </div>
 
                 {/* Submit */}
