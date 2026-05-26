@@ -11,12 +11,12 @@ import { serverRouter, createContext } from "@repo/trpc/server";
 import { env } from "./env";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
-import helmet from "helmet";
+
 
 export const app = express();
 
-// Apply security headers
-app.use(helmet());
+
+
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
