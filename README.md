@@ -4,17 +4,17 @@
 
 SagaForms is a production-grade, highly secure, and dynamic form builder SaaS. It enables creators to design custom forms with advanced validation, publish them to the public or keep them unlisted, and collect rich analytics. 
 
-This project was built from the ground up using the provided Turborepo starter, strictly adhering to every functional and non-functional requirement provided by the judges.
+This project was built from the ground up using the provided Turborepo starter, strictly adhering to the functional and non-functional requirements provided by the judges.
 
 ---
 
 ## 🚀 Quick Links & Demo
 
-- **Live Application:** [Insert Vercel Link Here]
-- **API Documentation (Scalar):** [Insert Vercel Link Here]/docs *(or `http://localhost:8000/docs` locally)*
+- **Live Application:** [`https://typeform-web-swart.vercel.app/`]
+- **API Documentation (Scalar):** [Insert Vercel Link Here]/docs *(or `https://typeform-ckmt.onrender.com/docs` locally)*
 
 ### 🔑 Demo Credentials (Judge Review)
-We have prepared a fully seeded demo environment so you can review the product instantly. The database has been pre-populated with **3 themed forms** (Movies, Startups, Gaming) and **48 realistic user responses** for analytics.
+We have prepared a fully seeded demo environment so you can review the product instantly. The database has been pre-populated with **3 sample forms** (Movies, Startups, Gaming) and **48 realistic user responses** for analytics.
 
 - **Email:** `demo@sagaforms.com`
 - **Password:** `demo1234`
@@ -60,20 +60,21 @@ How does a user interact with SagaForms? Here is the complete end-to-end journey
 2. They enter a Title, Description, and select a Visibility mode (`Public` or `Unlisted`). 
 3. The form is saved to the database in a `draft` status.
 4. The Creator is taken to the **Form Builder**, where they can dynamically add Fields (Short Text, Email, Rating, Select, Yes/No, etc.).
-5. They configure validation rules for each field (e.g., "Is Required?").
+5. **Drag-and-Drop Reordering:** Creators can seamlessly drag fields up and down to reorder them in real-time, powered by `@dnd-kit`.
 6. Once satisfied, they click **Publish**, generating a shareable link.
 
 ### 3. Public Response Collection
 1. A **Respondent** clicks the shareable link (no login required).
 2. If the form is `Unlisted`, it can only be accessed directly via this link. If it is `Public`, it also appears on the public Explore page.
-3. The Respondent fills out the dynamically generated UI. React Hook Form instantly validates their input against Zod schemas.
-4. Upon submission, the backend verifies the form hasn't expired and hasn't hit its response limit.
-5. The backend records an irreversible `ipHash` for the Respondent to prevent spam without storing their actual IP.
-6. Transactional emails are dispatched to both the Creator (New Response Alert) and the Respondent (Thank You Receipt).
+3. **Conditional Logic:** Forms adapt dynamically! Fields automatically show or hide based on the respondent's previous answers (e.g., if a user selects a specific dropdown option).
+4. The Respondent fills out the dynamically generated UI. The frontend validates their input against advanced Zod schemas.
+5. Upon submission, the backend verifies the form hasn't expired and hasn't hit its response limit.
+6. The backend records an irreversible `ipHash` for the Respondent to prevent spam without storing their actual IP.
+7. Transactional emails are dispatched to both the Creator (New Response Alert) and the Respondent (Thank You Receipt).
 
 ### 4. Analytics
 1. The Creator returns to their Dashboard and clicks on the form.
-2. They view a real-time table of recent submissions and analytics.
+2. They view a real-time table of recent submissions and a **Time-Series Chart** plotting form submissions over the last 30 days.
 
 ### 📊 Flow Diagram
 
@@ -124,9 +125,8 @@ sequenceDiagram
 A form builder deals with sensitive user data. This application was built with enterprise-level security in mind:
 
 - **Strict Rate Limiting:** The backend utilizes `express-rate-limit` to prevent API abuse, DDoS attacks, and spam on public form submissions.
-- **Helmet HTTP Headers:** We use `helmet` to inject 15+ modern HTTP security headers (HSTS, Content-Security-Policy, X-Frame-Options) to protect against XSS and clickjacking.
 - **Advanced Authentication:** 
-  - Custom JWT-based authentication system using HTTP-only, SameSite strict cookies.
+  - Custom JWT-based authentication system using HTTP-only cookies.
   - Passwords are never stored in plaintext. We generate a unique 16-byte cryptographically secure salt and hash passwords using HMAC-SHA256 (`crypto.createHmac`).
 - **Duplicate Submission Protection:** Public form submissions generate an irreversible `ipHash` on the backend to prevent the same user from spamming a form, while keeping their actual IP anonymous.
 - **Visibility Enforcement:** The backend strictly verifies if a form is `public`, `unlisted`, or `draft`. If a form is unpublished or expired (via `expiresAt`), the tRPC router entirely rejects the submission.
@@ -140,14 +140,16 @@ A form builder deals with sensitive user data. This application was built with e
 - [x] **Creator Dashboard:** Secure authentication and management UI.
 - [x] **Dynamic Form Builder:** Add, edit, and configure fields dynamically.
 - [x] **Rich Field Types:** Supports Text, Email, Number, Select, Textarea, Rating, Yes/No, and more.
-- [x] **Zod Validation:** Every single field validates its required/optional state on both frontend and backend.
 - [x] **Visibility Modes:** Supports `Public` (shows on Explore page) and `Unlisted` (hidden, link-only).
 - [x] **Public Submissions:** Respondents can fill forms without logging in.
-- [x] **Analytics:** Dashboard shows recent submissions and response tracking.
+- [x] **Analytics:** Dashboard shows recent submissions and time-series response tracking.
 - [x] **Email Notifications:** Integrated with `Resend` to send transactional emails to both Creators and Respondents upon submission.
 - [x] **Scalar API Docs:** Fully interactive API reference deployed alongside the backend.
 
 ### Bonus Features Implemented 🌟
+- [x] **Advanced Zod Validation:** Implemented Min/Max lengths, Min/Max values, and powerful Regex pattern matching for field inputs on top of standard required/optional states.
+- [x] **Drag-and-Drop UX:** Integrated `@dnd-kit` in the form builder allowing creators to easily drag fields to reorder them visually.
+- [x] **Conditional Logic:** Built dynamic evaluation logic that evaluates user input (`equals`, `contains`, `is_empty`) to conditionally hide/show subsequent fields in the public form.
 - [x] **Password Protected Forms:** Creators can lock forms with a password.
 - [x] **Response Limits & Expiry:** Forms automatically close when they hit a date or submission limit.
 - [x] **Public Explore Page:** A template gallery showing all public forms.
@@ -161,7 +163,7 @@ If you wish to run the project locally to review the source code:
 
 **1. Clone & Install Dependencies**
 ```bash
-git clone https://github.com/your-username/sagaforms.git
+git clone https://github.com/priyanshupandey12/typeform
 cd sagaforms
 pnpm install
 ```
@@ -190,8 +192,8 @@ pnpm --filter @repo/database db:seed
 pnpm dev
 ```
 - **Frontend:** `http://localhost:3000`
-- **Backend API:** `http://localhost:8000`
-- **Scalar Docs:** `http://localhost:8000/docs`
+- **Backend API:** `http:localhost:8000`
+- **Scalar Docs:** `http:localhost:8000/docs`
 
 ---
 *Built with ❤️ for the Hackathon.*
